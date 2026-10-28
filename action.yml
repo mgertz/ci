@@ -1,0 +1,56 @@
+name: Semantic Release
+description: Generate semantic versions, Git tags, release notes, and GitHub Releases from Conventional Commits.
+author: mgertz
+branding:
+  icon: tag
+  color: blue
+
+inputs:
+  token:
+    description: GitHub token with contents:write permission on the calling repository.
+    default: ${{ github.token }}
+  release-branch:
+    description: Branch from which stable releases are published.
+    default: main
+
+outputs:
+  new_release_published:
+    description: The string 'true' if a release was published, otherwise 'false'.
+    value: ${{ steps.release.outputs.new_release_published }}
+  new_release_version:
+    description: Published semantic version without the v prefix; empty if no release was published.
+    value: ${{ steps.release.outputs.new_release_version }}
+  new_release_git_tag:
+    description: Published Git tag, such as v1.0.0; empty if no release was published.
+    value: ${{ steps.release.outputs.new_release_git_tag }}
+
+runs:
+  using: composite
+  steps:
+    - name: Checkout release repository and full history
+      uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      with:
+        fetch-depth: 0
+        token: ${{ inputs.token }}
+
+    - name: Set up release runtime
+      uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+      with:
+        node-version: '24'
+        cache: npm
+        cache-dependency-path: ${{ github.action_path }}/package-lock.json
+
+    - name: Install isolated release dependencies
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      run: npm ci --ignore-scripts --no-audit --no-fund
+
+    - name: Publish semantic release
+      id: release
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.token }}
+        GH_TOKEN: ${{ inputs.token }}
+        RELEASE_BRANCH: ${{ inputs.release-branch }}
+        RELEASE_REPOSITORY_URL: ${{ github.server_url }}/${{ github.repository }}.git
+      run: node "$GITHUB_ACTION_PATH/src/release.mjs"

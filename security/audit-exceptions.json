@@ -1,0 +1,24 @@
+[
+  {
+    "name": "ip-address",
+    "path": "node_modules/npm/node_modules/ip-address",
+    "version": "10.7.2",
+    "severity": "moderate",
+    "advisories": [
+      "https://github.com/advisories/GHSA-rxp7-6hxx-x8q5"
+    ]
+  },
+  {
+    "name": "undici",
+    "path": "node_modules/npm/node_modules/undici",
+    "version": "6.29.0",
+    "severity": "high",
+    "advisories": [
+      "https://github.com/advisories/GHSA-4qv8-2p9j-2685",
+      "https://github.com/advisories/GHSA-xjj6-f33q-929c",
+      "https://github.com/advisories/GHSA-2m5v-pch6-74hx",
+      "https://github.com/advisories/GHSA-qrxm-fqhp-jwvm",
+      "https://github.com/advisories/GHSA-9fm3-97px-rjf6"
+    ]
+  }
+]

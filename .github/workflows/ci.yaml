@@ -1,0 +1,49 @@
+name: Validate and release action
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: semantic-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  test:
+    name: Test release tooling
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout action source
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - name: Set up Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Install dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Test release tooling
+        run: npm test
+      - name: Check for unaccepted vulnerabilities
+        run: npm run audit:dependencies
+
+  release:
+    name: Release this action
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      # A local action must exist before GitHub can read its action.yml.
+      - name: Checkout local action
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - name: Publish using this action
+        uses: ./
+      - name: Update major-version alias
+        shell: bash
+        run: bash scripts/update-major-tag.sh

@@ -37,8 +37,9 @@ runs:
       uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
       with:
         node-version: '24'
-        cache: npm
-        cache-dependency-path: ${{ github.action_path }}/package-lock.json
+        # The action's lockfile can live outside the caller's workspace. Local
+        # self-release paths can also contain /./, which cache hashing rejects.
+        package-manager-cache: false
 
     - name: Install isolated release dependencies
       shell: bash
